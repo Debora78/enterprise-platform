@@ -1,0 +1,50 @@
+name: enterprise
+
+# version: "3.9" commentato perchè è deprecato e viene ignorato poichè
+# la versione è rilevata automaticamente
+
+services:
+ # -------------------------------------------------------
+  # Servizio PostgreSQL
+  # -------------------------------------------------------
+
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: user           # Utente PostgreSQL creato automaticamente
+      POSTGRES_PASSWORD: password   # Password dell'utente
+      POSTGRES_DB: enterprise_db    # Database creato automaticamente
+    ports:
+      - "5450:5432"                 # Espone PostgreSQL sulla porta standard(il primo numero
+                                    # è riferito a Postgres mentre il secondo al PC)
+
+
+  # -------------------------------------------------------
+  # Backend Flask
+  # -------------------------------------------------------
+  backend:
+    build: ../backend                # Path corretto della cartella backend
+    environment:
+      # Stringa di connessione corretta per SQLAlchemy
+      DATABASE_URL: postgresql://user:password@db:5432/enterprise_db
+      SECRET_KEY: super_secret_key
+
+    depends_on:
+      - db
+    ports:
+      - "5000:5000"                 # Espone Flask
+
+
+  frontend:
+    build: ../frontend             # Path corretto della cartella frontend
+    ports:
+      - "3000:3000"
+
+    depends_on:
+      - backend   
+
+# ---------------------------------------------------------
+# Volume per salvare i dati del database
+# ---------------------------------------------------------
+volumes:
+  db_data:      
